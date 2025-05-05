@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mobile Tetris Buatan Faisal</title>
   <style>
     body {
@@ -18,12 +18,14 @@
       border: 2px solid #fff;
       margin-top: 10px;
     }
+    .score {
+      margin-top: 10px;
+      font-size: 18px;
+    }
     .controls {
       margin-top: 10px;
       display: flex;
       gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
     }
     .controls button {
       padding: 10px 15px;
@@ -32,11 +34,11 @@
       background: #444;
       color: white;
       border-radius: 5px;
-      min-width: 50px;
     }
-    .score {
-      margin-top: 10px;
-      font-size: 20px;
+    #disqus_thread {
+      margin-top: 30px;
+      width: 100%;
+      max-width: 600px;
     }
   </style>
 </head>
@@ -45,19 +47,20 @@
   <canvas id="tetris" width="240" height="400"></canvas>
   <div class="score">Skor: <span id="score">0</span></div>
   <div class="controls">
-    <button type="button" onclick="playerMove(-1)">←</button>
-    <button type="button" onclick="playerRotate()">⟳</button>
-    <button type="button" onclick="playerMove(1)">→</button>
-    <button type="button" onclick="playerDrop()">↓</button>
+    <button onclick="playerMove(-1)">←</button>
+    <button onclick="playerRotate()">⟳</button>
+    <button onclick="playerMove(1)">→</button>
+    <button onclick="playerDrop()">↓</button>
   </div>
 
+  <div id="disqus_thread"></div>
   <script>
     const canvas = document.getElementById('tetris');
     const context = canvas.getContext('2d');
     context.scale(20, 20);
 
-    const scoreElement = document.getElementById('score');
     let score = 0;
+    const scoreElement = document.getElementById('score');
 
     function updateScore() {
       scoreElement.innerText = score;
@@ -72,9 +75,10 @@
         const row = arena.splice(y, 1)[0].fill(0);
         arena.unshift(row);
         ++y;
-        score += 10;
-        updateScore();
+        score += 10 * rowCount;
+        rowCount *= 2;
       }
+      updateScore();
     }
 
     function collide(arena, player) {
@@ -185,11 +189,10 @@
     }
 
     function playerReset() {
-      const pieces = 'TJLOSZI';
+      const pieces = 'ILJOTSZ';
       player.matrix = createPiece(pieces[Math.floor(Math.random() * pieces.length)]);
       player.pos.y = 0;
-      player.pos.x = Math.floor(arena[0].length / 2) -
-                     Math.floor(player.matrix[0].length / 2);
+      player.pos.x = Math.floor(arena[0].length / 2) - Math.floor(player.matrix[0].length / 2);
       if (collide(arena, player)) {
         arena.forEach(row => row.fill(0));
         score = 0;
@@ -225,7 +228,7 @@
     }
 
     let dropCounter = 0;
-    let dropInterval = 1000;
+    let dropInterval = 500;
     let lastTime = 0;
 
     function update(time = 0) {
@@ -251,20 +254,13 @@
     ];
 
     const arena = createMatrix(12, 20);
+
     const player = {
       pos: {x: 0, y: 0},
       matrix: null,
     };
 
-    // Keyboard controls with debounce
-    let lastKeyTime = 0;
-    const keyDelay = 100;
-
     document.addEventListener('keydown', event => {
-      const now = Date.now();
-      if (now - lastKeyTime < keyDelay) return;
-      lastKeyTime = now;
-
       if (event.key === 'ArrowLeft') {
         playerMove(-1);
       } else if (event.key === 'ArrowRight') {
@@ -278,7 +274,21 @@
 
     playerReset();
     update();
-    updateScore();
+  </script>
+
+  <!-- DISQUS -->
+  <script>
+    var disqus_config = function () {
+      this.page.url = window.location.href;
+      this.page.identifier = 'tetris-faisal-game';
+    };
+
+    (function() {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://tetrisfaisal.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
   </script>
 </body>
 </html>
